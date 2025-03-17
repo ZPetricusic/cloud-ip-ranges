@@ -25,16 +25,5 @@ jobs:
         run: chmod +x ./scripts/*
       - name: Run the scripts
         run: ./scripts/parse_aws_ranges.sh
-      - name: Configure credentials
-        run: |
-          pwd
-          ls -laR
-          git config --global user.name 'IpRangeBot'
-          git config --global user.email 'IpRangeBot@users.noreply.github.com'
-      - name: Commit and push
-        run: |
-          git status
-          git add --all
-          DATETIME=$(date "+%d-%m-%Y %T%z"); git commit -m "Automatic range refresh - $DATETIME"
-          git status
-          git push
+      - name: Check if new content exists and push
+        run: ./scripts/push_changes.sh
