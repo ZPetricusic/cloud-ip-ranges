@@ -1,0 +1,40 @@
+name: Auto-update ranges
+
+on:
+  # Once daily, at midnight
+  schedule:
+  - cron: "0 0 * * *" # testing - every minute
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-and-update:
+    runs-on: ubuntu-latest
+    env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Check out the repo for the runner
+        uses: actions/checkout@v4
+      - name: Ignore file permission changes
+        run: git config core.fileMode false
+      - name: Set the executable bit
+        run: chmod +x ./scripts/*
+      - name: Run the scripts
+        run: ./scripts/parse_aws_ranges.sh
+      - name: Configure credentials
+        run: |
+          pwd
+          ls -laR
+          git config --global user.name 'IpRangeBot'
+          git config --global user.email 'IpRangeBot@users.noreply.github.com'
+      - name: Commit and push
+        run: |
+          git status
+          git add --all
+          DATETIME=$(date "+%d-%m-%Y %T%z"); git commit -m "Automatic range refresh - $DATETIME"
+          git status
+          git push
